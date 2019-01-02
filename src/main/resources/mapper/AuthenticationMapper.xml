@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.hodor.unionplatform.dao.AuthenticationMapper">
+
+    <resultMap id="baseResultMap" type="cc.hodor.unionplatform.model.AuthenticationDO">
+        <id column="id" property="id"/>
+        <result column="engine" property="engine" typeHandler="cc.hodor.unionplatform.config.mybatis.typehandler.EnumCodeTypeHandler"/>
+        <result column="app_access_key" property="appAccesskey"/>
+        <result column="app_access_secret" property="appAccessSecret"/>
+        <result column="app_id" property="appId"/>
+        <result column="extend_info" property="extendInfo" typeHandler="cc.hodor.unionplatform.config.mybatis.typehandler.MapTypeHandler"/>
+    </resultMap>
+
+    <insert id="insertAuth" parameterType="cc.hodor.unionplatform.model.AuthenticationDO">
+        INSERT INTO `c_authentication` (
+        `id`,
+        `engine`,
+        `app_access_key`,
+        `app_access_secret`,
+        `app_id`,
+        `extend_info`) VALUES
+        (
+        #{id},
+        #{engine, typeHandler=cc.hodor.unionplatform.config.mybatis.typehandler.EnumCodeTypeHandler},
+        #{appAccessKey},
+        #{appAccessSecret},
+        #{appId},
+        #{extendInfo, typeHandler=cc.hodor.unionplatform.config.mybatis.typehandler.MapTypeHandler}
+        )
+    </insert>
+
+    <insert id="insertCollect" parameterType="java.util.List">
+        INSERT INTO `c_authentication` (
+          `id`,
+          `engine`,
+          `app_access_key`,
+          `app_access_secret`,
+          `app_id`,
+          `extend_info`) VALUES
+        <foreach collection="list" item="pojo" index="index" separator=",">
+            (
+            #(pojo.id),
+            #(pojo.engine),
+            #(pojo.appAccessKey),
+            #(pojo.appAccessSecret),
+            #(pojo.appId),
+            #(pojo.extendInfo, typeHandler=cc.hodor.unionplatform.config.mybatis.typehandler.MapTypeHandler)
+            )
+        </foreach>
+    </insert>
+</mapper>
