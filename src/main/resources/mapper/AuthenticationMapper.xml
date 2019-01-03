@@ -13,6 +13,10 @@
         <result column="extend_info" property="extendInfo" typeHandler="cc.hodor.unionplatform.config.mybatis.typehandler.MapTypeHandler"/>
     </resultMap>
 
+    <update id="updateParams">
+        UPDATE `c_authentication`
+    </update>
+
     <insert id="insertAuth" parameterType="cc.hodor.unionplatform.model.AuthenticationDO">
         INSERT INTO `c_authentication` (
         `id`,

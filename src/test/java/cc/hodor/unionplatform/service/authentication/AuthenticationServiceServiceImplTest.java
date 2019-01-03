@@ -3,7 +3,9 @@ package cc.hodor.unionplatform.service.authentication;
 import cc.hodor.unionplatform.AppTests;
 import cc.hodor.unionplatform.base.VendorEnum;
 import cc.hodor.unionplatform.model.AuthenticationDO;
+import cc.hodor.unionplatform.service.ServiceResult;
 import cc.hodor.unionplatform.web.authentication.AuthenticationDTO;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -23,7 +25,8 @@ public class AuthenticationServiceServiceImplTest extends AppTests {
         authenticationDTO.setAppAccessKey("a123");
         authenticationDTO.setAppAccessSecret("ABC");
 
-        authenticationService.createAuthentication(authenticationDTO);
+        ServiceResult ret = authenticationService.createAuthentication(authenticationDTO);
+        Assert.assertTrue(ret.isSuccess());
 
     }
 }

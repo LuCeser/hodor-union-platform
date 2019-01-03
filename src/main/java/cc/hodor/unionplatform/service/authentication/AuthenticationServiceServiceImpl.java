@@ -52,23 +52,34 @@ public class AuthenticationServiceServiceImpl implements IAuthenticationService 
             log.error("设置属性失败", e);
         }
 
+        ServiceResult<Integer> ret = new ServiceResult<>();
         int updates = authenticationMapper.insertAuth(authenticationDO);
         if (updates > 0) {
             log.info("插入数据权信息");
+            ret.setSuccess(true);
+            ret.setData(updates);
+        } else {
+            ret.setSuccess(false);
         }
-        return null;
+        return ret;
     }
 
     @Override
     public ServiceResult createAuthentication(List<AuthenticationDTO> authenticationDTOList) {
+        ServiceResult ret = new ServiceResult();
         for (AuthenticationDTO authenticationDTO:authenticationDTOList) {
-            ServiceResult ret = createAuthentication(authenticationDTO);
+            ret = createAuthentication(authenticationDTO);
+            if (!ret.isSuccess()) {
+                log.warn("插入失败 {}, {}", authenticationDTO.getEngine(), authenticationDTO.getAppId());
+                break;
+            }
         }
-        return null;
+        return ret;
     }
 
     @Override
     public ServiceResult updateAuthentication(String engine, Map param) {
+
         return null;
     }
 

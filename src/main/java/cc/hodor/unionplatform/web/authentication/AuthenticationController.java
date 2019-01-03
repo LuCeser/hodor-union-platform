@@ -2,6 +2,7 @@ package cc.hodor.unionplatform.web.authentication;
 
 import cc.hodor.unionplatform.service.ServiceResult;
 import cc.hodor.unionplatform.service.authentication.IAuthenticationService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +37,11 @@ public class AuthenticationController {
     @PostMapping
     public ResponseEntity createAuthentication(@RequestBody List<AuthenticationDTO> authenticationDTOS) {
         ServiceResult ret = authenticationService.createAuthentication(authenticationDTOS);
-        return null;
+        if (ret.isSuccess()) {
+            return new ResponseEntity(HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity(ret.getData(), HttpStatus.NOT_ACCEPTABLE);
+        }
     }
 
 
