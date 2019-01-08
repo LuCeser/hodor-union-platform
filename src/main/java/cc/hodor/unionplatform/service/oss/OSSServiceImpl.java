@@ -44,6 +44,7 @@ public class OSSServiceImpl implements IOSSService {
         ServiceResult authResult = authenticationService.getAuthentication(ossDTO.getEngine());
         if (authResult.isSuccess()) {
             List<String> filePathList = FileUtils.getListFiles(ossDTO.getFilePath(), "", false);
+            log.info("file : {}", filePathList.size());
             AuthenticationDO authenticationDO = (AuthenticationDO) authResult.getData();
             Map extendInfo = authenticationDO.getExtendInfo();
             String endpoint = (String) extendInfo.get("endpoint");

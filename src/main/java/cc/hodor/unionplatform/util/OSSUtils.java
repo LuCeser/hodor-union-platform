@@ -36,6 +36,8 @@ public class OSSUtils {
                                    String bucketName, String prefix, List<String> filePathList) {
 
         OSSClient ossClient = new OSSClient(endpoint, accessKeyId, accessKeySecret);
+        long current = System.currentTimeMillis();
+        log.info("start put object ");
         try {
             for (String filePath:filePathList) {
                 String[] fileAttrs = filePath.split("/");
@@ -52,7 +54,7 @@ public class OSSUtils {
             ossClient.shutdown();
         }
 
-        log.info("上传文件值ALI OSS成功");
+        log.info("上传文件值ALI OSS成功, spent: {}", System.currentTimeMillis() - current);
         return true;
     }
 
