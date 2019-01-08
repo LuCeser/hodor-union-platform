@@ -2,6 +2,7 @@ package cc.hodor.unionplatform.web.oss;
 
 import cc.hodor.unionplatform.service.ServiceResult;
 import cc.hodor.unionplatform.service.oss.IOSSService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,7 +37,11 @@ public class OSSController {
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity uploadFile(@RequestBody OSSDTO ossDTO) {
         ServiceResult ret = ossService.uploadFile(ossDTO);
-        return null;
+        if (ret.isSuccess()) {
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity(HttpStatus.SERVICE_UNAVAILABLE);
+        }
     }
 
     public OSSController(IOSSService ossService) {
