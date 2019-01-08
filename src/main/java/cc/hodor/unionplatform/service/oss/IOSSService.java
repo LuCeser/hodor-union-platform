@@ -1,8 +1,7 @@
-package cc.hodor.unionplatform.service;
+package cc.hodor.unionplatform.service.oss;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import cc.hodor.unionplatform.service.ServiceResult;
+import cc.hodor.unionplatform.web.oss.OSSDTO;
 
 /***************************************************************************************
  *
@@ -12,28 +11,18 @@ import lombok.Setter;
  *
  ***************************************************************************************
  *
+ *  Header Name: WellJoint
  *
  *  Description: 
+ *  ${DESCRIPTION}
  *
  *  Revision History:
  *                                   Modification
  *   Author                  Date(MM/DD/YYYY)             JiraID            Description of Changes
  *   ----------------      ------------------------       -------------     ----------------------
- *   zhanglu               2018/12/28-9:46
+ *   zhanglu               2019/1/8-9:05
  *
  ****************************************************************************************/
-@Setter
-@Getter
-@NoArgsConstructor
-public class ServiceResult<T> {
-
-    public ServiceResult(boolean success) {
-        this.success = success;
-    }
-
-    private boolean success;
-
-    private T data;
-
-
+public interface IOSSService {
+    ServiceResult uploadFile(OSSDTO ossDTO);
 }

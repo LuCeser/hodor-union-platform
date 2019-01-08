@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /***************************************************************************************
  *
@@ -47,7 +48,10 @@ public class AuthenticationController {
 
     @RequestMapping(method = RequestMethod.PUT)
     public ResponseEntity updateAuthentication(@RequestParam("engine") String engine,
-                                               @RequestParam("field") String fields) {
+                                               @RequestParam("field") String fields,
+                                               @RequestBody Map param) {
+
+        String[] fieldArr = fields.split(",");
 
         return null;
     }

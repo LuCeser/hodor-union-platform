@@ -7,14 +7,22 @@
     <resultMap id="baseResultMap" type="cc.hodor.unionplatform.model.AuthenticationDO">
         <id column="id" property="id"/>
         <result column="engine" property="engine" typeHandler="cc.hodor.unionplatform.config.mybatis.typehandler.EnumCodeTypeHandler"/>
-        <result column="app_access_key" property="appAccesskey"/>
+        <result column="app_access_key" property="appAccessKey"/>
         <result column="app_access_secret" property="appAccessSecret"/>
         <result column="app_id" property="appId"/>
         <result column="extend_info" property="extendInfo" typeHandler="cc.hodor.unionplatform.config.mybatis.typehandler.MapTypeHandler"/>
     </resultMap>
 
     <update id="updateParams">
-        UPDATE `c_authentication`
+        UPDATE `c_authentication` a
+          <set>
+              <if test="appAccessKey != null">a.app_access_key = #{appAccessKey},</if>
+              <if test="appAccessSecret != null">a.app_access_secret = #{appAccessSecret},</if>
+              <if test="appId != null">a.app_id = #{appId},</if>
+              <if test="extendInfo != null">a.extend_info = #{extendInfo, typeHandler=cc.hodor.unionplatform.config.mybatis.typehandler.MapTypeHandler},</if>
+          </set>
+        where
+          a.engine = #{engine}
     </update>
 
     <insert id="insertAuth" parameterType="cc.hodor.unionplatform.model.AuthenticationDO">
@@ -54,4 +62,15 @@
             )
         </foreach>
     </insert>
+
+    <select id="findByEngine" resultMap="baseResultMap">
+        SELECT
+          `engine`,
+          `app_access_key`,
+          `app_access_secret`,
+          `app_id`,
+          `extend_info`
+        FROM `c_authentication`
+        WHERE `engine`=#{engine}
+    </select>
 </mapper>

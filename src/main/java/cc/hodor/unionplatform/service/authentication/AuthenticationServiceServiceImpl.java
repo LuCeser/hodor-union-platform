@@ -1,5 +1,6 @@
 package cc.hodor.unionplatform.service.authentication;
 
+import cc.hodor.unionplatform.base.VendorEnum;
 import cc.hodor.unionplatform.dao.AuthenticationMapper;
 import cc.hodor.unionplatform.model.AuthenticationDO;
 import cc.hodor.unionplatform.service.ServiceResult;
@@ -22,7 +23,6 @@ import java.util.UUID;
  *
  ***************************************************************************************
  *
- *  Header Name: WellJoint
  *
  *  Description: 
  *
@@ -37,7 +37,6 @@ import java.util.UUID;
 @Service("authenticationService")
 public class AuthenticationServiceServiceImpl implements IAuthenticationService {
 
-    @Autowired
     private AuthenticationMapper authenticationMapper;
 
     @Override
@@ -89,12 +88,27 @@ public class AuthenticationServiceServiceImpl implements IAuthenticationService 
     }
 
     @Override
-    public ServiceResult getAuthentication(String engine) {
-        return null;
+    public ServiceResult getAuthentication(VendorEnum engine) {
+        ServiceResult ret = new ServiceResult();
+        AuthenticationDO authenticationDO = authenticationMapper.findByEngine(engine.getCode());
+        if (authenticationDO != null) {
+            log.info("找到记录 {}", engine);
+            ret.setSuccess(true);
+            ret.setData(authenticationDO);
+        } else {
+            log.info("未找到记录 {}", engine);
+            ret.setSuccess(false);
+        }
+        return ret;
     }
 
     @Override
     public ServiceResult deleteAuthentication(String engine) {
         return null;
+    }
+
+    @Autowired
+    public AuthenticationServiceServiceImpl(AuthenticationMapper authenticationMapper) {
+        this.authenticationMapper = authenticationMapper;
     }
 }

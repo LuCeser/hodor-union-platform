@@ -1,9 +1,11 @@
 package cc.hodor.unionplatform.dao;
 
 import cc.hodor.unionplatform.model.AuthenticationDO;
+import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
+import java.util.Map;
 
 /***************************************************************************************
  *
@@ -30,4 +32,9 @@ public interface AuthenticationMapper extends Mapper<AuthenticationDO> {
 
     int insertAuth(AuthenticationDO authenticationDO);
 
+    int updateParams(@Param("engine") String engine, @Param("appAccessKey") String appAccessKey,
+                     @Param("appAccessSecret") String appAccessSecret, @Param("appId") String appId,
+                     @Param("extendInfo") Map extendInfo);
+
+    AuthenticationDO findByEngine(@Param("engine") int engine);
 }

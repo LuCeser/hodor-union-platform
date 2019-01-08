@@ -58,4 +58,8 @@ public enum VendorEnum implements BaseEnum {
     public int getCode() {
         return code;
     }
+
+    public String getDesc() {
+        return desc;
+    }
 }

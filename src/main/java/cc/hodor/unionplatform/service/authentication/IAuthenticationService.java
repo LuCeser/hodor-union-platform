@@ -1,5 +1,6 @@
 package cc.hodor.unionplatform.service.authentication;
 
+import cc.hodor.unionplatform.base.VendorEnum;
 import cc.hodor.unionplatform.service.ServiceResult;
 import cc.hodor.unionplatform.web.authentication.AuthenticationDTO;
 
@@ -14,7 +15,6 @@ import java.util.Map;
  *
  ***************************************************************************************
  *
- *  Header Name: WellJoint
  *
  *  Description: 
  *
@@ -34,7 +34,7 @@ public interface IAuthenticationService {
 
     ServiceResult getAllAuthentication();
 
-    ServiceResult getAuthentication(String engine);
+    ServiceResult getAuthentication(VendorEnum engine);
 
     ServiceResult deleteAuthentication(String engine);
 }
