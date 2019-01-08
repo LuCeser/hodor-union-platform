@@ -1,6 +1,8 @@
 package cc.hodor.unionplatform.util;
 
+import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSSClient;
+import com.aliyun.oss.OSSException;
 import com.aliyun.oss.model.PutObjectResult;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,14 +36,24 @@ public class OSSUtils {
                                    String bucketName, String prefix, List<String> filePathList) {
 
         OSSClient ossClient = new OSSClient(endpoint, accessKeyId, accessKeySecret);
-        for (String filePath:filePathList) {
-            String[] fileAttrs = filePath.split("/");
-            String objectName = fileAttrs[fileAttrs.length - 1];
-            PutObjectResult putRet = ossClient.putObject(bucketName, objectName, new File(filePath));
-            log.info("上传语音文件结果 {}", putRet.getResponse().getStatusCode());
+        try {
+            for (String filePath:filePathList) {
+                String[] fileAttrs = filePath.split("/");
+                String objectName = fileAttrs[fileAttrs.length - 1];
+                ossClient.putObject(bucketName, objectName, new File(filePath));
+            }
+        } catch (OSSException e) {
+            log.error("上传文件至OSS失败");
+            return false;
+        } catch (ClientException e) {
+            log.error("上传文件至OSS失败");
+            return false;
+        } finally {
+            ossClient.shutdown();
         }
 
-        return false;
+        log.info("上传文件值ALI OSS成功");
+        return true;
     }
 
 }
