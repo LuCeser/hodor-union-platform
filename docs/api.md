@@ -92,4 +92,21 @@
 
 # 2. 语音转文本功能
 
+## 2.1 启动语音识别
+
+`POST {baseUrl}/v1.0/asr`
+
+请求Body参数
+
+| 参数        | 类型    | 说明                               |
+| ----------- | ------- | ---------------------------------- |
+| engine      | string  | 使用的引擎类型                     |
+| callbackUrl | string  | 使用的结果回调URL                  |
+| ossType     | string  | 使用的文件服务类型                 |
+| freeAccount | boolean | 是否为免费服务，由此来限制访问数量 |
+
+## 2.2 停止语音识别
+
+`DELETE {baseUrl}/v1.0/asr/{engine}`
+
 # 3. 热词管理
