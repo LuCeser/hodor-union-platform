@@ -1,10 +1,14 @@
-package cc.hodor.unionplatform.web.oss;
+package cc.hodor.unionplatform.model;
 
 import cc.hodor.unionplatform.base.constant.VendorEnum;
-import lombok.AllArgsConstructor;
+import cc.hodor.unionplatform.base.entity.Sentence;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import tk.mybatis.mapper.annotation.KeySql;
+
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.util.List;
 
 /***************************************************************************************
  *
@@ -14,6 +18,7 @@ import lombok.Setter;
  *
  ***************************************************************************************
  *
+ *  Header Name: WellJoint
  *
  *  Description: 
  *  ${DESCRIPTION}
@@ -22,23 +27,24 @@ import lombok.Setter;
  *                                   Modification
  *   Author                  Date(MM/DD/YYYY)             JiraID            Description of Changes
  *   ----------------      ------------------------       -------------     ----------------------
- *   zhanglu               2019/1/7-16:02
+ *   zhanglu               2019/1/10-15:27
  *
  ****************************************************************************************/
-@Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class OSSDTO {
+@Getter
+@Table(name = "fact_recognition_result")
+public class RecognitionResultDO {
 
-    /**
-     * 需要上传至oss的文件目录
-     */
-    private String filePath;
+    @Id
+    @KeySql(useGeneratedKeys = true)
+    private Long id;
 
-    /**
-     * 需要上传的文件服务
-     */
+    private long fileId;
+
     private VendorEnum engine;
+
+    private long duration;
+
+    private List<Sentence> result;
 
 }

@@ -1,6 +1,7 @@
-package cc.hodor.unionplatform.util;
+package cc.hodor.unionplatform.dao;
 
-import cc.hodor.unionplatform.base.constant.BaseEnum;
+import cc.hodor.unionplatform.model.RecognitionResultDO;
+import tk.mybatis.mapper.common.Mapper;
 
 /***************************************************************************************
  *
@@ -10,29 +11,19 @@ import cc.hodor.unionplatform.base.constant.BaseEnum;
  *
  ***************************************************************************************
  *
- *  Header Name: WellJoint
  *
- *  Description:
- *
- *  使用一个枚举工作类来完成从枚举 code 值获得枚举实例的工作
+ *  Description: 
+ *  ${DESCRIPTION}
  *
  *  Revision History:
  *                                   Modification
  *   Author                  Date(MM/DD/YYYY)             JiraID            Description of Changes
  *   ----------------      ------------------------       -------------     ----------------------
- *   zhanglu               2019/1/2-15:45
+ *   zhanglu               2019/1/10-15:39
  *
  ****************************************************************************************/
-public class EnumUtils {
+public interface RecognitionResultMapper extends Mapper<RecognitionResultDO> {
 
-    public static <T extends Enum<?> & BaseEnum> T codeOf(Class<T> enumClass, int code) {
-        T[] enumConstants = enumClass.getEnumConstants();
-        for (T t : enumConstants) {
-            if (t.getCode() == code) {
-                return t;
-            }
-        }
-        return null;
-    }
+    int insertResult(RecognitionResultDO recognitionResultDO);
 
 }

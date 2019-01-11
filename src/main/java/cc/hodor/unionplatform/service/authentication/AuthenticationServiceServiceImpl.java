@@ -1,6 +1,6 @@
 package cc.hodor.unionplatform.service.authentication;
 
-import cc.hodor.unionplatform.base.VendorEnum;
+import cc.hodor.unionplatform.base.constant.VendorEnum;
 import cc.hodor.unionplatform.dao.AuthenticationMapper;
 import cc.hodor.unionplatform.model.AuthenticationDO;
 import cc.hodor.unionplatform.service.ServiceResult;
@@ -88,7 +88,7 @@ public class AuthenticationServiceServiceImpl implements IAuthenticationService 
     }
 
     @Override
-    public ServiceResult getAuthentication(VendorEnum engine) {
+    public ServiceResult<AuthenticationDO> getAuthentication(VendorEnum engine) {
         ServiceResult ret = new ServiceResult();
         AuthenticationDO authenticationDO = authenticationMapper.findByEngine(engine.getCode());
         if (authenticationDO != null) {

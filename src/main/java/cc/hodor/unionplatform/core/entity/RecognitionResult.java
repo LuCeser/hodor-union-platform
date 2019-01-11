@@ -1,6 +1,11 @@
-package cc.hodor.unionplatform.util;
+package cc.hodor.unionplatform.core.entity;
 
-import cc.hodor.unionplatform.base.constant.BaseEnum;
+import cc.hodor.unionplatform.base.constant.AsrStatusEnum;
+import cc.hodor.unionplatform.base.entity.Sentence;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.List;
 
 /***************************************************************************************
  *
@@ -10,29 +15,25 @@ import cc.hodor.unionplatform.base.constant.BaseEnum;
  *
  ***************************************************************************************
  *
- *  Header Name: WellJoint
  *
- *  Description:
- *
- *  使用一个枚举工作类来完成从枚举 code 值获得枚举实例的工作
+ *  Description: 
+ *  ${DESCRIPTION}
  *
  *  Revision History:
  *                                   Modification
  *   Author                  Date(MM/DD/YYYY)             JiraID            Description of Changes
  *   ----------------      ------------------------       -------------     ----------------------
- *   zhanglu               2019/1/2-15:45
+ *   zhanglu               2019/1/11-9:09
  *
  ****************************************************************************************/
-public class EnumUtils {
+@Setter
+@Getter
+public class RecognitionResult {
 
-    public static <T extends Enum<?> & BaseEnum> T codeOf(Class<T> enumClass, int code) {
-        T[] enumConstants = enumClass.getEnumConstants();
-        for (T t : enumConstants) {
-            if (t.getCode() == code) {
-                return t;
-            }
-        }
-        return null;
-    }
+    private AsrStatusEnum status;
+
+    private long duration;
+
+    private List<Sentence> sentences;
 
 }

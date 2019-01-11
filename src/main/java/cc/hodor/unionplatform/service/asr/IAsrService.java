@@ -1,6 +1,9 @@
-package cc.hodor.unionplatform.util;
+package cc.hodor.unionplatform.service.asr;
 
-import cc.hodor.unionplatform.base.constant.BaseEnum;
+import cc.hodor.unionplatform.base.constant.VendorEnum;
+import cc.hodor.unionplatform.core.entity.RecognitionResult;
+import cc.hodor.unionplatform.service.ServiceResult;
+import cc.hodor.unionplatform.web.asr.AsrDTO;
 
 /***************************************************************************************
  *
@@ -12,27 +15,20 @@ import cc.hodor.unionplatform.base.constant.BaseEnum;
  *
  *  Header Name: WellJoint
  *
- *  Description:
- *
- *  使用一个枚举工作类来完成从枚举 code 值获得枚举实例的工作
+ *  Description: 
+ *  ${DESCRIPTION}
  *
  *  Revision History:
  *                                   Modification
  *   Author                  Date(MM/DD/YYYY)             JiraID            Description of Changes
  *   ----------------      ------------------------       -------------     ----------------------
- *   zhanglu               2019/1/2-15:45
+ *   zhanglu               2019/1/10-9:41
  *
  ****************************************************************************************/
-public class EnumUtils {
+public interface IAsrService {
+    ServiceResult startAsr(AsrDTO asrDTO);
 
-    public static <T extends Enum<?> & BaseEnum> T codeOf(Class<T> enumClass, int code) {
-        T[] enumConstants = enumClass.getEnumConstants();
-        for (T t : enumConstants) {
-            if (t.getCode() == code) {
-                return t;
-            }
-        }
-        return null;
-    }
+    ServiceResult stopAsr(VendorEnum vendorEnum);
 
+    void saveRecognitionResult(RecognitionResult recognitionResult);
 }

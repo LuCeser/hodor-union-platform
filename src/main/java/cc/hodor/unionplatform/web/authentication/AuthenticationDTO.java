@@ -1,6 +1,6 @@
 package cc.hodor.unionplatform.web.authentication;
 
-import cc.hodor.unionplatform.base.VendorEnum;
+import cc.hodor.unionplatform.base.constant.VendorEnum;
 import lombok.Getter;
 import lombok.Setter;
 

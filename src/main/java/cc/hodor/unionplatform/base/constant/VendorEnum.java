@@ -1,4 +1,4 @@
-package cc.hodor.unionplatform.base;
+package cc.hodor.unionplatform.base.constant;
 
 /***************************************************************************************
  *

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.hodor.unionplatform.dao.RecognitionResultMapper">
+    <resultMap id="baseResultMap" type="cc.hodor.unionplatform.model.RecognitionResultDO">
+        <id column="id" property="id"/>
+        <result column="file_id" property="fileId"/>
+        <result column="engine" property="engine"/>
+        <result column="duration" property="duration"/>
+        <result column="result" property="result" typeHandler="cc.hodor.unionplatform.config.mybatis.typehandler.SentenceTypeHandler"/>
+    </resultMap>
+
+
+    <insert id="insertResult" useGeneratedKeys="true" keyProperty="id" parameterType="cc.hodor.unionplatform.model.RecognitionResultDO">
+        INSERT INTO `fact_recognition_result` (
+        `id`,
+        `file_id`,
+        `engine`,
+        `duration`,
+        `result`
+        ) VALUES
+        (
+        #{id},
+        #{fileId},
+        #{engine, typeHandler=cc.hodor.unionplatform.config.mybatis.typehandler.EnumCodeTypeHandler},
+        #{duration},
+        #{result, typeHandler=cc.hodor.unionplatform.config.mybatis.typehandler.SentenceTypeHandler}
+        )
+    </insert>
+
+</mapper>

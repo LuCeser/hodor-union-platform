@@ -1,4 +1,4 @@
-package cc.hodor.unionplatform.base;
+package cc.hodor.unionplatform.base.constant;
 
 /***************************************************************************************
  *
@@ -10,17 +10,18 @@ package cc.hodor.unionplatform.base;
  *
  *  Header Name: WellJoint
  *
- *  Description:
- *
- *  为了实现Mybatis枚举类转换的通用接口
+ *  Description: 
+ *  ${DESCRIPTION}
  *
  *  Revision History:
  *                                   Modification
  *   Author                  Date(MM/DD/YYYY)             JiraID            Description of Changes
  *   ----------------      ------------------------       -------------     ----------------------
- *   zhanglu               2019/1/2-15:40
+ *   zhanglu               2019/1/11-9:09
  *
  ****************************************************************************************/
-public interface BaseEnum {
-    int getCode();
+public enum AsrStatusEnum {
+
+    RUNNING, QUEUED, SUCCESS, FAILED;
+
 }

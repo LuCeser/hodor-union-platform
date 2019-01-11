@@ -1,6 +1,7 @@
 package cc.hodor.unionplatform.service.authentication;
 
-import cc.hodor.unionplatform.base.VendorEnum;
+import cc.hodor.unionplatform.base.constant.VendorEnum;
+import cc.hodor.unionplatform.model.AuthenticationDO;
 import cc.hodor.unionplatform.service.ServiceResult;
 import cc.hodor.unionplatform.web.authentication.AuthenticationDTO;
 
@@ -34,7 +35,7 @@ public interface IAuthenticationService {
 
     ServiceResult getAllAuthentication();
 
-    ServiceResult getAuthentication(VendorEnum engine);
+    ServiceResult<AuthenticationDO> getAuthentication(VendorEnum engine);
 
     ServiceResult deleteAuthentication(String engine);
 }

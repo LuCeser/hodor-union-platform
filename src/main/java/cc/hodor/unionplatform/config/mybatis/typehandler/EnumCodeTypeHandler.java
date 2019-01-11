@@ -1,6 +1,6 @@
 package cc.hodor.unionplatform.config.mybatis.typehandler;
 
-import cc.hodor.unionplatform.base.BaseEnum;
+import cc.hodor.unionplatform.base.constant.BaseEnum;
 import cc.hodor.unionplatform.util.EnumUtils;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;

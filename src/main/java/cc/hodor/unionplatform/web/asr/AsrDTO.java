@@ -1,9 +1,7 @@
-package cc.hodor.unionplatform.web.oss;
+package cc.hodor.unionplatform.web.asr;
 
 import cc.hodor.unionplatform.base.constant.VendorEnum;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /***************************************************************************************
@@ -22,23 +20,36 @@ import lombok.Setter;
  *                                   Modification
  *   Author                  Date(MM/DD/YYYY)             JiraID            Description of Changes
  *   ----------------      ------------------------       -------------     ----------------------
- *   zhanglu               2019/1/7-16:02
+ *   zhanglu               2019/1/8-17:34
  *
  ****************************************************************************************/
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class OSSDTO {
+public class AsrDTO {
 
     /**
-     * 需要上传至oss的文件目录
-     */
-    private String filePath;
-
-    /**
-     * 需要上传的文件服务
+     * 使用的识别引擎类型
      */
     private VendorEnum engine;
+
+    /**
+     * 结果回调地址
+     */
+    private String callbackUrl;
+
+    /**
+     * 使用的对象存储类型
+     */
+    private VendorEnum ossType;
+
+    /**
+     * 任务并发数量
+     */
+    private int concurrentNumber;
+
+    /**
+     * 是否为免费账户
+     */
+    private boolean freeAccount;
 
 }

@@ -1,15 +1,12 @@
 package cc.hodor.unionplatform.service.authentication;
 
 import cc.hodor.unionplatform.AppTests;
-import cc.hodor.unionplatform.base.VendorEnum;
-import cc.hodor.unionplatform.model.AuthenticationDO;
+import cc.hodor.unionplatform.base.constant.VendorEnum;
 import cc.hodor.unionplatform.service.ServiceResult;
 import cc.hodor.unionplatform.web.authentication.AuthenticationDTO;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import static org.junit.Assert.*;
 
 public class AuthenticationServiceServiceImplTest extends AppTests {
 

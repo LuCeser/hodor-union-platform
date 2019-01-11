@@ -1,6 +1,12 @@
-package cc.hodor.unionplatform.util;
+package cc.hodor.unionplatform.model;
 
-import cc.hodor.unionplatform.base.constant.BaseEnum;
+import lombok.Getter;
+import lombok.Setter;
+
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.io.Serializable;
+import java.util.Date;
 
 /***************************************************************************************
  *
@@ -12,27 +18,29 @@ import cc.hodor.unionplatform.base.constant.BaseEnum;
  *
  *  Header Name: WellJoint
  *
- *  Description:
- *
- *  使用一个枚举工作类来完成从枚举 code 值获得枚举实例的工作
+ *  Description: 
+ *  ${DESCRIPTION}
  *
  *  Revision History:
  *                                   Modification
  *   Author                  Date(MM/DD/YYYY)             JiraID            Description of Changes
  *   ----------------      ------------------------       -------------     ----------------------
- *   zhanglu               2019/1/2-15:45
+ *   zhanglu               2019/1/9-9:33
  *
  ****************************************************************************************/
-public class EnumUtils {
+@Getter
+@Setter
+@Table(name = "t_record")
+public class RecordDO implements Serializable {
 
-    public static <T extends Enum<?> & BaseEnum> T codeOf(Class<T> enumClass, int code) {
-        T[] enumConstants = enumClass.getEnumConstants();
-        for (T t : enumConstants) {
-            if (t.getCode() == code) {
-                return t;
-            }
-        }
-        return null;
-    }
+    @Id
+    private long id;
 
+    private String filename;
+
+    private Date date;
+
+    private String owner;
+
+    private String uniqueId;
 }
