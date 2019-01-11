@@ -3,6 +3,7 @@ package cc.hodor.unionplatform.core.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Map;
 import java.util.Set;
 
 /***************************************************************************************
@@ -45,7 +46,12 @@ public class OSSResult {
     private boolean truncated;
 
     /**
+     * 对应录音id
+     */
+    private long fileId;
+
+    /**
      * 限定返回的url
      */
-    private Set<String> presignedUrls;
+    private Set<Map> fileUrls;
 }

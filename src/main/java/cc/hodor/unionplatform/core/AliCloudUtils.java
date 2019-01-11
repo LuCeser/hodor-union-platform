@@ -1,6 +1,7 @@
 package cc.hodor.unionplatform.core;
 
 import cc.hodor.unionplatform.base.constant.AsrStatusEnum;
+import cc.hodor.unionplatform.base.constant.VendorEnum;
 import cc.hodor.unionplatform.base.entity.Sentence;
 import cc.hodor.unionplatform.core.entity.RecognitionResult;
 import com.alibaba.fastjson.JSONArray;
@@ -13,6 +14,7 @@ import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.http.MethodType;
 import com.aliyuncs.profile.DefaultProfile;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
@@ -72,16 +74,14 @@ public class AliCloudUtils {
     /**
      * 调用阿里云语音转写服务
      *
-     * @param accessKeyId
-     * @param accessKeySecret
+     * @param  acsClient
      * @param appId
      * @param fileUrl
      * @return 任务id
      */
-    public static String asr(String accessKeyId, String accessKeySecret,
+    public static String asr(IAcsClient acsClient,
                              String appId, String fileUrl) {
 
-        IAcsClient acsClient = getAliClient(accessKeyId, accessKeySecret);
         CommonRequest postRequest = new CommonRequest();
         postRequest.setDomain(DOMAIN); // 设置域名，固定值
         postRequest.setVersion(API_VERSION);         // 设置API的版本号，固定值
@@ -119,11 +119,9 @@ public class AliCloudUtils {
     }
 
 
-    public static RecognitionResult getAsrResult(String accessKeyId, String accessKeySecret, String taskId) {
+    public static RecognitionResult getAsrResult(IAcsClient acsClient, String taskId) {
 
         RecognitionResult recognitionResult = new RecognitionResult();
-
-        IAcsClient acsClient = getAliClient(accessKeyId, accessKeySecret);
 
         CommonRequest getRequest = new CommonRequest();
         getRequest.setDomain(DOMAIN);   // 设置域名，固定值
@@ -144,48 +142,28 @@ public class AliCloudUtils {
                 return recognitionResult;
             }
             JSONObject result = JSONObject.parseObject(getResponse.getData());
-//            log.info("识别查询结果：" + result.toJSONString());
             statusText = result.getString("StatusText");
             if (statusText.equals("RUNNING") || statusText.equals("QUEUEING")) {
                 log.info("{} : 任务正在运行中 {}", taskId, statusText);
                 recognitionResult.setStatus(AsrStatusEnum.RUNNING);
                 return recognitionResult;
-            } else {
+            } else if (StringUtils.equals("SUCCESS", statusText)){
                 recognitionResult.setStatus(AsrStatusEnum.SUCCESS);
-                recognitionResult.setDuration(result.getLong("BizDuration") != null ? result.getLong("BizDuration"):0);
+                recognitionResult.setDuration(result.getLong("BizDuration") != null ? result.getLong("BizDuration") : 0);
                 JSONArray sentenceArray = result.getJSONObject("Result").getJSONArray("Sentences");
                 String sentenceStr = JSONObject.toJSONString(sentenceArray);
                 List<Sentence> sentences = JSONArray.parseArray(sentenceStr, Sentence.class);
 
+                recognitionResult.setEngine(VendorEnum.ALI);
                 recognitionResult.setSentences(sentences);
+            } else {
+                recognitionResult.setStatus(AsrStatusEnum.FAILED);
+                log.warn("{} : 获取语音识别结果失败: {}", taskId, result.toJSONString());
             }
         } catch (ClientException e) {
             log.error("获取语音识别结果失败", e);
         }
 
-//        while (true) {
-//            try {
-//                getResponse = acsClient.getCommonResponse(getRequest);
-//                if (getResponse.getHttpStatus() != 200) {
-//                    log.warn("识别结果查询请求失败，Http错误码： {}, {}", getResponse.getHttpStatus(), getResponse.getData());
-//                    break;
-//                }
-//                JSONObject result = JSONObject.parseObject(getResponse.getData());
-//                log.info("识别查询结果：" + result.toJSONString());
-//                statusText = result.getString("StatusText");
-//                if (statusText.equals("RUNNING") || statusText.equals("QUEUEING")) {
-//                    // 继续轮询
-//                    Thread.sleep(3000);
-//                } else {
-//                    break;
-//                }
-//            } catch (ClientException e) {
-//                log.error("获取语音识别结果失败", e);
-//            } catch (InterruptedException e) {
-//                log.error("线程等待失败", e);
-//            }
-//
-//        }
         if (statusText.equals("SUCCESS") || statusText.equals("SUCCESS_WITH_NO_VALID_FRAGMENT")) {
             log.info("录音文件识别成功！");
         } else {

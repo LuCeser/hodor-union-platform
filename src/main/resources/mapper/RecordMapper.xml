@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.hodor.unionplatform.dao.RecordMapper">
+
+    <resultMap id="baseResult" type="cc.hodor.unionplatform.model.RecordDO">
+        <id column="id" property="id"/>
+        <result column="filename" property="filename"/>
+        <result column="date" property="date"/>
+        <result column="owner" property="owner"/>
+        <result column="unique_id" property="uniqueId"/>
+    </resultMap>
+
+    <select id="findByUid" resultMap="baseResult">
+        SELECT
+          id, filename, date, owner, unique_id
+        FROM
+          t_record
+        WHERE unique_id=#{uniqueId}
+    </select>
+
+</mapper>

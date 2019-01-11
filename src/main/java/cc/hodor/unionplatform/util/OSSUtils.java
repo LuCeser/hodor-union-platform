@@ -11,10 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.net.URL;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /***************************************************************************************
  *
@@ -76,16 +73,18 @@ public class OSSUtils {
     }
 
     public static OSSResult generatePresignedUrls(final String endpoint, final String accessKeyId, final String accessKeySecret,
-                                                  final String bucketName, final int maxFiles, final Date expiration) {
+                                                  final String bucketName, final String marker, final int maxFiles, final Date expiration) {
 
         OSSResult ossResult = new OSSResult();
         OSSClient ossClient = new OSSClient(endpoint, accessKeyId, accessKeySecret);
         try {
 
-            Set<String> presignedUrls = new HashSet<>(maxFiles);
+//            Set<String> fileUrls = new HashSet<>(maxFiles);
+            Set<Map> fileUrls = new HashSet<>(maxFiles);
 
-            ObjectListing objectListing = ossClient.listObjects(new ListObjectsRequest(bucketName).withMaxKeys(maxFiles));
-            String marker = objectListing.getMarker();
+            ObjectListing objectListing = ossClient.listObjects(
+                    new ListObjectsRequest(bucketName).withMaxKeys(maxFiles).withMarker(marker));
+            String currentMarker = objectListing.getMarker();
             String nextMarker = objectListing.getNextMarker();
             boolean isTruncated = objectListing.isTruncated();
 
@@ -93,12 +92,16 @@ public class OSSUtils {
             for (OSSObjectSummary summary : summaries) {
                 URL url = ossClient.generatePresignedUrl(bucketName, summary.getKey(), expiration);
                 log.debug("文件名: {}, 生成临时url: {}", summary.getKey(), url.toString());
-                presignedUrls.add(url.toString());
+                Map fileUrlMap = new HashMap(4);
+                fileUrlMap.put("filename", summary.getKey());
+                fileUrlMap.put(summary.getKey(), url.toString());
+                fileUrls.add(fileUrlMap);
+//                fileUrls.add(url.toString());
             }
 
-            ossResult.setMarker(marker);
+            ossResult.setMarker(currentMarker);
             ossResult.setNextMarker(nextMarker);
-            ossResult.setPresignedUrls(presignedUrls);
+            ossResult.setFileUrls(fileUrls);
             ossResult.setTruncated(isTruncated);
         } catch (OSSException e) {
             log.error("生成签名URL失败");

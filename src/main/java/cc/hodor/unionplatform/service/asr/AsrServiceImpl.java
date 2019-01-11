@@ -6,19 +6,25 @@ import cc.hodor.unionplatform.core.AliCloudUtils;
 import cc.hodor.unionplatform.core.entity.OSSResult;
 import cc.hodor.unionplatform.core.entity.RecognitionResult;
 import cc.hodor.unionplatform.dao.RecognitionResultMapper;
+import cc.hodor.unionplatform.dao.RecordMapper;
 import cc.hodor.unionplatform.model.AuthenticationDO;
 import cc.hodor.unionplatform.model.RecognitionResultDO;
+import cc.hodor.unionplatform.model.RecordDO;
 import cc.hodor.unionplatform.service.ServiceResult;
 import cc.hodor.unionplatform.service.authentication.IAuthenticationService;
 import cc.hodor.unionplatform.util.OSSUtils;
 import cc.hodor.unionplatform.web.asr.AsrDTO;
+import com.aliyuncs.IAcsClient;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -52,14 +58,27 @@ public class AsrServiceImpl implements IAsrService {
     @NonNull
     private RecognitionResultMapper recognitionResultMapper;
 
+    @NonNull
+    private RecordMapper recordMapper;
+
+    private static CountDownLatch latch;
+
     private ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+    private static final String PATTERN = "^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}&";
+
 
     @Override
     public ServiceResult startAsr(AsrDTO asrDTO) {
+//        Pattern pattern = Pattern.compile(PATTERN);
+
         ServiceResult ret = new ServiceResult(false);
 
         ServiceResult authServiceRet = authenticationService.getAuthentication(asrDTO.getEngine());
         if (authServiceRet.isSuccess()) {
+
+            latch = new CountDownLatch(asrDTO.getConcurrentNumber());
+
             AuthenticationDO authenticationDO = (AuthenticationDO) authServiceRet.getData();
             String appAccessKey = authenticationDO.getAppAccessKey();
             String appAccesSecret = authenticationDO.getAppAccessSecret();
@@ -68,14 +87,31 @@ public class AsrServiceImpl implements IAsrService {
                 String endpoint = (String) authenticationDO.getExtendInfo().get("endpoint");
                 String bucketName = (String) authenticationDO.getExtendInfo().get("bucket");
                 Date expiration = new Date(new Date().getTime() + 3600 * 1000); // 设置临时URL有效时间为1小时
-                OSSResult ossResult = OSSUtils.generatePresignedUrls(endpoint, appAccessKey, appAccesSecret, bucketName, 1, expiration);
-                if (ossResult.isTruncated()) {
-                    for (String url : ossResult.getPresignedUrls()) {
-                        String taskId = AliCloudUtils.asr(appAccessKey, appAccesSecret, appId, url);
-                        executorService.execute(new AsrResultTask(appAccessKey, appAccesSecret, taskId, this));
-//                        AliCloudUtils.getAsrResult(appAccessKey, appAccesSecret, taskId);
+                OSSResult ossResult = OSSUtils.generatePresignedUrls(endpoint, appAccessKey, appAccesSecret,
+                        bucketName, null, asrDTO.getConcurrentNumber(), expiration);
+                IAcsClient acsClient = AliCloudUtils.getAliClient(appAccessKey, appAccesSecret);
+
+
+                while (!StringUtils.isEmpty(ossResult.getNextMarker())) {
+                    for (Map fileUrlMap : ossResult.getFileUrls()) {
+                        String fileName = (String) fileUrlMap.get("filename");
+
+                        String uid = fileName.substring(15, 51);
+                        RecordDO recordDO = recordMapper.findByUid(uid);
+
+                        String url = (String) fileUrlMap.get(fileName);
+                        String taskId = AliCloudUtils.asr(acsClient, appId, url);
+                        executorService.execute(new AsrResultTask(latch, taskId, recordDO.getId(), acsClient, this));
+                        try {
+                            latch.await();
+                        } catch (InterruptedException e) {
+                            log.error("", e);
+                        }
                     }
+                    ossResult = OSSUtils.generatePresignedUrls(endpoint, appAccessKey, appAccesSecret,
+                            bucketName, ossResult.getNextMarker(), asrDTO.getConcurrentNumber(), expiration);
                 }
+
             }
         }
 
@@ -92,7 +128,7 @@ public class AsrServiceImpl implements IAsrService {
         RecognitionResultDO recognitionResultDO = new RecognitionResultDO();
         recognitionResultDO.setDuration(recognitionResult.getDuration());
         recognitionResultDO.setEngine(VendorEnum.ALI);
-        recognitionResultDO.setFileId(1);
+        recognitionResultDO.setFileId(recognitionResult.getFileId());
         recognitionResultDO.setResult(recognitionResult.getSentences());
 
         log.info("识别结果插入数据库");
@@ -105,11 +141,12 @@ public class AsrServiceImpl implements IAsrService {
 @AllArgsConstructor
 class AsrResultTask implements Runnable {
 
-    private String appAccessKey;
-    private String appAccessSecret;
+    private CountDownLatch latch;
 
     private String taskId;
+    private long fileId;
 
+    private IAcsClient acsClient;
     private IAsrService asrService;
 
     @Override
@@ -117,23 +154,33 @@ class AsrResultTask implements Runnable {
 
         RecognitionResult result;
 
-        while (true) {
-            result = AliCloudUtils.getAsrResult(appAccessKey, appAccessSecret, taskId);
-            if (result.getStatus() == AsrStatusEnum.SUCCESS) {
-                log.info("{} : 识别成功", taskId);
-                this.asrService.saveRecognitionResult(result);
-                break;
-            } else if (result.getStatus() == AsrStatusEnum.FAILED) {
-                log.warn("{} : 识别失败", taskId);
-                break;
-            } else {
-                log.info("{} : 识别中", taskId);
-                try {
-                    Thread.sleep(5 * 1000);
-                } catch (InterruptedException e) {
-                    log.error("", e);
+        try {
+            while (true) {
+                result = AliCloudUtils.getAsrResult(acsClient, taskId);
+                if (result.getStatus() == AsrStatusEnum.SUCCESS) {
+                    log.info("{} : 识别成功", taskId);
+                    result.setFileId(fileId);
+                    this.asrService.saveRecognitionResult(result);
+                    break;
+                } else if (result.getStatus() == AsrStatusEnum.FAILED) {
+                    log.warn("{} : 识别失败", taskId);
+                    break;
+                } else {
+                    log.info("{} : 识别中", taskId);
+                    try {
+                        Thread.sleep(5 * 1000);
+                    } catch (InterruptedException e) {
+                        log.error("", e);
+                    }
                 }
+            }
+        } catch (Exception e) {
+            log.error("", e);
+        } finally {
+            if (latch != null) {
+                latch.countDown();
             }
         }
     }
+
 }

@@ -1,12 +1,8 @@
-package cc.hodor.unionplatform.core.entity;
+package cc.hodor.unionplatform.dao;
 
-import cc.hodor.unionplatform.base.constant.AsrStatusEnum;
-import cc.hodor.unionplatform.base.constant.VendorEnum;
-import cc.hodor.unionplatform.base.entity.Sentence;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.List;
+import cc.hodor.unionplatform.model.RecordDO;
+import org.apache.ibatis.annotations.Param;
+import tk.mybatis.mapper.common.Mapper;
 
 /***************************************************************************************
  *
@@ -24,21 +20,11 @@ import java.util.List;
  *                                   Modification
  *   Author                  Date(MM/DD/YYYY)             JiraID            Description of Changes
  *   ----------------      ------------------------       -------------     ----------------------
- *   zhanglu               2019/1/11-9:09
+ *   zhanglu               2019/1/11-15:14
  *
  ****************************************************************************************/
-@Setter
-@Getter
-public class RecognitionResult {
+public interface RecordMapper extends Mapper<RecordDO> {
 
-    private VendorEnum engine;
-
-    private AsrStatusEnum status;
-
-    private long duration;
-
-    private long fileId;
-
-    private List<Sentence> sentences;
+    RecordDO findByUid(@Param("uniqueId") String uid);
 
 }
