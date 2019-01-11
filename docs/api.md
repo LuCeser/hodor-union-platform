@@ -98,12 +98,13 @@
 
 请求Body参数
 
-| 参数        | 类型    | 说明                               |
-| ----------- | ------- | ---------------------------------- |
-| engine      | string  | 使用的引擎类型                     |
-| callbackUrl | string  | 使用的结果回调URL                  |
-| ossType     | string  | 使用的文件服务类型                 |
-| freeAccount | boolean | 是否为免费服务，由此来限制访问数量 |
+| 参数             | 类型    | 说明                                                   |
+| ---------------- | ------- | ------------------------------------------------------ |
+| engine           | string  | 使用的引擎类型                                         |
+| callbackUrl      | string  | 使用的结果回调URL                                      |
+| ossType          | string  | 使用的文件服务类型                                     |
+| concurrentNumber | int     | 任务并发数量，同时发起的识别任务数量，根据账户权限设置 |
+| freeAccount      | boolean | 是否为免费服务，由此来限制访问数量                     |
 
 ## 2.2 停止语音识别
 
