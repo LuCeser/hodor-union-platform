@@ -1,7 +1,11 @@
 package cc.hodor.unionplatform.util;
 
+import cc.hodor.unionplatform.util.http.AisHttpRequest;
+import cc.hodor.unionplatform.util.http.AisHttpResponse;
 import com.alibaba.fastjson.JSON;
+import com.aliyun.oss.common.utils.HttpUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpResponse;
@@ -22,6 +26,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.Map;
 
 /***************************************************************************************
@@ -32,7 +37,6 @@ import java.util.Map;
  *
  ***************************************************************************************
  *
- *  Header Name: WellJoint
  *
  *  Description: 
  *
@@ -390,5 +394,67 @@ public class HttpUtils {
         log.debug("调用 " + url + " over, elapsed: " + delayTime);
         return result;
     }
+
+    public static AisHttpResponse doPost(AisHttpRequest request) {
+
+        String url;
+        String charset = request.getContentEncoding();
+        String content = request.getBodyStr();
+        HashMap<String, String> header = request.getHeaders();
+
+        AisHttpResponse response = new AisHttpResponse();
+        CloseableHttpResponse httpResponse = null;
+        CloseableHttpClient client = null;
+
+        try {
+
+            if (request.getParams().isEmpty()) {
+                url = request.getUri().toString();
+            } else {
+                url = String.format("%s?%s", request.getUri().toString(), request.getParamStr());
+            }
+            RequestConfig config = RequestConfig.custom().setConnectTimeout(DEFAULT_TIMEOUT).setConnectionRequestTimeout(DEFAULT_TIMEOUT).setSocketTimeout(DEFAULT_TIMEOUT).build();
+            client = HttpClientBuilder.create().setDefaultRequestConfig(config).build();
+            HttpPost post = new HttpPost(request.getUri());
+
+            for (Map.Entry<String, String> entry : header.entrySet()) {
+                post.addHeader(entry.getKey(), entry.getValue());
+            }
+
+            StringEntity entity = new StringEntity(content, "utf-8");
+            post.setEntity(entity);
+
+            httpResponse = client.execute(post);
+
+            if (httpResponse.getStatusLine().getStatusCode() != 200) {
+                log.warn("doPost 请求提交失败[{} - {}]: {}",httpResponse.getStatusLine().getStatusCode(),httpResponse.getStatusLine().getReasonPhrase(),url);
+            }
+
+            httpResponse.getAllHeaders();
+            for (Header respHeader:httpResponse.getAllHeaders()) {
+                response.addHeader(respHeader.getName(), respHeader.getValue());
+            }
+            response.setBody(EntityUtils.toByteArray(httpResponse.getEntity()));
+
+        } catch (Exception e) {
+            log.error("请求失败", e);
+        } finally {
+            try {
+                if (httpResponse != null)
+                    httpResponse.close();
+            } catch (Exception e) {
+                log.error("关闭http response失败", e);
+            }
+            try {
+                if (client != null)
+                    client.close();
+            } catch (Exception e) {
+                log.error("关闭http client失败", e);
+            }
+        }
+
+        return response;
+    }
+
 
 }
