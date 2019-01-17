@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /***************************************************************************************
  *
@@ -45,6 +47,7 @@ import java.util.List;
 public class HuaweiCloudUtils {
 
     private static final String uri = "/v1.0/voice/asr/long-sentence";
+
 
     private static final int connectionTimeout = 5000; //连接目标url超时限制
     private static final int connectionRequestTimeout = 1000;//连接池获取可用连接超时限制
@@ -73,6 +76,7 @@ public class HuaweiCloudUtils {
             String fileBase64Str = Base64.encodeBase64String(fileData);
             JSONObject json = new JSONObject();
             json.put("data", fileBase64Str); //如果音频Base64编码超过10MB（对应音频本身约6MB），请使用OBS方式，注释掉此行
+            json.put("category", "dialog");
 
             AisHttpRequest request = new AisHttpRequest();
 
@@ -124,6 +128,9 @@ public class HuaweiCloudUtils {
             JSONObject resp = null;
             JSONObject jsonObject = null;
             int status = -1;
+
+            Pattern pattern = Pattern.compile("^\\((.*)\\)");
+
             while (true) {
                 getResponse = service.get(url);
                 result = HttpClientUtils.convertStreamToString(getResponse.getEntity().getContent());
@@ -140,12 +147,34 @@ public class HuaweiCloudUtils {
                     result = (String) jsonObject.get("words");
                     log.info("{}: 任务识别完成", jobId);
 
+
                     recognitionResult.setStatus(AsrStatusEnum.SUCCESS);
                     recognitionResult.setEngine(VendorEnum.HUAWEI);
 
-                    Sentence sentence = new Sentence();
+                    String[] textArr = result.split("\n");
+                    List<Sentence> sentences = new ArrayList<>(textArr.length);
 
-                    sentence.setText("");
+                    for (String msg: textArr) {
+                        Sentence sentence = new Sentence();
+                        Matcher matcher = pattern.matcher(msg);
+                        if (matcher.find()) {
+                            String roleNumber = matcher.group(1);
+                            if (StringUtils.equals("role 1", roleNumber)) {
+                                sentence.setChannelId(1);
+                            } else if (StringUtils.equals("role 2", roleNumber)){
+                                sentence.setChannelId(2);
+                            }
+
+                            String[] textMsg = msg.split("\\)");
+                            sentence.setText(textMsg[1]);
+                        } else {
+                            sentence.setText(msg);
+                        }
+
+                        sentences.add(sentence);
+                    }
+
+                    recognitionResult.setSentences(sentences);
 
                     //可选动作，音频识别结束，将音频从obs中删除
                     //obsFileHandle.delete();
@@ -165,8 +194,6 @@ public class HuaweiCloudUtils {
         } catch (InterruptedException e) {
             log.error("", e);
         }
-
-        log.info(result);
 
         return recognitionResult;
     }
