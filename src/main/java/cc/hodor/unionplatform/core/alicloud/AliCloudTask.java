@@ -1,6 +1,8 @@
-package cc.hodor.unionplatform.core;
+package cc.hodor.unionplatform.core.alicloud;
 
 import cc.hodor.unionplatform.base.constant.AsrStatusEnum;
+import cc.hodor.unionplatform.base.constant.VendorEnum;
+import cc.hodor.unionplatform.core.BaseCloudTask;
 import cc.hodor.unionplatform.core.entity.RecognitionResult;
 import cc.hodor.unionplatform.service.asr.IAsrService;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +52,7 @@ public class AliCloudTask extends BaseCloudTask {
         long recoTimestamp = System.currentTimeMillis();
         log.info("{}: 识别总耗时 {}", taskId, recoTimestamp - current);
         if (ret.getStatus() == AsrStatusEnum.SUCCESS) {
+            ret.setEngine(VendorEnum.ALI);
             saveRecognitionResult(ret);
         }
         return ret.getStatus();

@@ -52,4 +52,6 @@ public class AsrDTO {
      */
     private boolean freeAccount;
 
+    private String fileDirectory;
+
 }

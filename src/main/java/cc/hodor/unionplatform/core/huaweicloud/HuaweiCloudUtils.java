@@ -1,10 +1,9 @@
-package cc.hodor.unionplatform.core;
+package cc.hodor.unionplatform.core.huaweicloud;
 
 import cc.hodor.unionplatform.base.constant.AsrStatusEnum;
 import cc.hodor.unionplatform.base.constant.VendorEnum;
 import cc.hodor.unionplatform.base.entity.Sentence;
 import cc.hodor.unionplatform.core.entity.RecognitionResult;
-import cc.hodor.unionplatform.util.http.AisHttpRequest;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.huawei.ais.common.AuthInfo;
@@ -53,6 +52,8 @@ public class HuaweiCloudUtils {
     private static final int connectionRequestTimeout = 1000;//连接池获取可用连接超时限制
     private static final int socketTimeout = 20000;//获取服务器响应数据超时限制
 
+    private static AisAccess client;
+
     public static AisAccess getAccessService(String accessKeyId, String accessKeySecret) {
         AuthInfo authInfo = new AuthInfo(
                 /*  语音识别服务的服务端点, 该服务端口信息可以从如下地址查询
@@ -68,7 +69,11 @@ public class HuaweiCloudUtils {
         return service;
     }
 
-    public static String asr(AisAccess aisService, String file) {
+    public static String asr(String accessKey, String accessSecret, String file) {
+        if (client == null) {
+            client = getAccessService(accessKey, accessSecret);
+        }
+
         byte[] fileData = new byte[0];
         try {
             fileData = FileUtils.readFileToByteArray(new File(file));
@@ -78,9 +83,7 @@ public class HuaweiCloudUtils {
             json.put("data", fileBase64Str); //如果音频Base64编码超过10MB（对应音频本身约6MB），请使用OBS方式，注释掉此行
             json.put("category", "dialog");
 
-            AisHttpRequest request = new AisHttpRequest();
-
-            HttpResponse response = aisService.post(uri, json.toJSONString());
+            HttpResponse response = client.post(uri, json.toJSONString());
             if (response.getStatusLine().getStatusCode() != 200) {
                 log.warn("调用语音识别服务失败");
             }
@@ -102,11 +105,11 @@ public class HuaweiCloudUtils {
         return null;
     }
 
-    public static List<String> asr(AisAccess aisService, List<String> fileList) {
+    public static List<String> asr(String accessKey, String accessSecret, List<String> fileList) {
 
         List<String> jobIds = new ArrayList<>(fileList.size());
         for (String filePath : fileList) {
-            String jobId = asr(aisService, filePath);
+            String jobId = asr(accessKey, accessSecret, filePath);
             if (!StringUtils.isEmpty(jobId)) {
                 jobIds.add(jobId);
             }
@@ -115,83 +118,79 @@ public class HuaweiCloudUtils {
         return jobIds;
     }
 
-    public static RecognitionResult getAsrResult(AisAccess service, String jobId) {
+    public static RecognitionResult getAsrResult(String accessKey, String accessSecret, String jobId) {
 
+        if (client == null) {
+            client = getAccessService(accessKey, accessSecret);
+        }
         RecognitionResult recognitionResult = new RecognitionResult();
 
         String url = uri + "?job_id=" + jobId;
 
-        HttpResponse getResponse = null;
-        String result = null;
+        HttpResponse getResponse;
+        String result;
         try {
 
-            JSONObject resp = null;
-            JSONObject jsonObject = null;
+            JSONObject resp;
+            JSONObject jsonObject;
             int status = -1;
 
             Pattern pattern = Pattern.compile("^\\((.*)\\)");
 
-            while (true) {
-                getResponse = service.get(url);
-                result = HttpClientUtils.convertStreamToString(getResponse.getEntity().getContent());
+            getResponse = client.get(url);
+            result = HttpClientUtils.convertStreamToString(getResponse.getEntity().getContent());
 
-                resp = JSON.parseObject(result);
-                jsonObject = (JSONObject) resp.get("result");
-                status = (int) jsonObject.get("status_code");
-                if (status == -1) {
-                    log.warn("{}: 任务识别失败", jobId);
-                    recognitionResult.setStatus(AsrStatusEnum.FAILED);
-                    break;
-                } else if (status == 2) {
-                    // 7. 处理服务返回的字符流，输出识别结果。
-                    result = (String) jsonObject.get("words");
-                    log.info("{}: 任务识别完成", jobId);
+            resp = JSON.parseObject(result);
+            jsonObject = (JSONObject) resp.get("result");
+            status = (int) jsonObject.get("status_code");
+            if (status == -1) {
+                log.warn("{}: 任务识别失败", jobId);
+                recognitionResult.setStatus(AsrStatusEnum.FAILED);
+            } else if (status == 2) {
+                // 7. 处理服务返回的字符流，输出识别结果。
+                result = (String) jsonObject.get("words");
+                log.info("{}: 任务识别完成", jobId);
 
 
-                    recognitionResult.setStatus(AsrStatusEnum.SUCCESS);
-                    recognitionResult.setEngine(VendorEnum.HUAWEI);
+                recognitionResult.setStatus(AsrStatusEnum.SUCCESS);
+                recognitionResult.setEngine(VendorEnum.HUAWEI);
 
-                    String[] textArr = result.split("\n");
-                    List<Sentence> sentences = new ArrayList<>(textArr.length);
+                String[] textArr = result.split("\n");
+                List<Sentence> sentences = new ArrayList<>(textArr.length);
 
-                    for (String msg: textArr) {
-                        Sentence sentence = new Sentence();
-                        Matcher matcher = pattern.matcher(msg);
-                        if (matcher.find()) {
-                            String roleNumber = matcher.group(1);
-                            if (StringUtils.equals("role 1", roleNumber)) {
-                                sentence.setChannelId(1);
-                            } else if (StringUtils.equals("role 2", roleNumber)){
-                                sentence.setChannelId(2);
-                            }
-
-                            String[] textMsg = msg.split("\\)");
-                            sentence.setText(textMsg[1]);
-                        } else {
-                            sentence.setText(msg);
+                for (String msg : textArr) {
+                    Sentence sentence = new Sentence();
+                    Matcher matcher = pattern.matcher(msg);
+                    if (matcher.find()) {
+                        String roleNumber = matcher.group(1);
+                        if (StringUtils.equals("role 1", roleNumber)) {
+                            sentence.setChannelId(1);
+                        } else if (StringUtils.equals("role 2", roleNumber)) {
+                            sentence.setChannelId(2);
                         }
 
-                        sentences.add(sentence);
+                        String[] textMsg = msg.split("\\)");
+                        sentence.setText(textMsg[1]);
+                    } else {
+                        sentence.setText(msg);
                     }
 
-                    recognitionResult.setSentences(sentences);
+                    sentences.add(sentence);
+                }
 
-                    //可选动作，音频识别结束，将音频从obs中删除
-                    //obsFileHandle.delete();
-                    break;
-                }
-                // status == 0 || status == 1
-                else {
-                    // 6.1 如果没有返回，等待一段时间，继续进行轮询。
-                    log.info("{}: 任务识别中", jobId);
-                    Thread.sleep(5 * 1000);
-                    continue;
-                }
+                recognitionResult.setSentences(sentences);
+
+                //可选动作，音频识别结束，将音频从obs中删除
+                //obsFileHandle.delete();
+            }
+            // status == 0 || status == 1
+            else {
+                // 6.1 如果没有返回，等待一段时间，继续进行轮询。
+                log.info("{}: 任务识别中", jobId);
             }
 
+
         } catch (IOException e) {
-            log.error("", e);
-        } catch (InterruptedException e) {
             log.error("", e);
         }
 

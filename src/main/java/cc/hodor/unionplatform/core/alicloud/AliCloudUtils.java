@@ -1,4 +1,4 @@
-package cc.hodor.unionplatform.core;
+package cc.hodor.unionplatform.core.alicloud;
 
 import cc.hodor.unionplatform.base.constant.AsrStatusEnum;
 import cc.hodor.unionplatform.base.constant.VendorEnum;

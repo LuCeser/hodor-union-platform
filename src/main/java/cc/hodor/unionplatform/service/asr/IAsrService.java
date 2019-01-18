@@ -33,5 +33,7 @@ public interface IAsrService {
 
     void saveRecognitionResult(RecognitionResult recognitionResult);
 
+    void longSentenceRecognition(AsrDTO asrDTO);
+
     RecordDO findFileId(String uid);
 }
