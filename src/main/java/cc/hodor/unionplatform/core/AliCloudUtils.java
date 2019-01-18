@@ -47,6 +47,8 @@ public class AliCloudUtils {
     public static final String API_VERSION = "2018-08-17";
     public static final String POST_REQUEST_ACTION = "SubmitTask";
 
+    private static IAcsClient client;
+
 
     /**
      * 阿里云权限认证, 调用阿里云SDK
@@ -74,13 +76,12 @@ public class AliCloudUtils {
     /**
      * 调用阿里云语音转写服务
      *
-     * @param  acsClient
      * @param appId
      * @param fileUrl
      * @return 任务id
      */
-    public static String asr(IAcsClient acsClient,
-                             String appId, String fileUrl) {
+    public static String asr(String appId, String accessKey, String accessSecret,
+                             String fileUrl) {
 
         CommonRequest postRequest = new CommonRequest();
         postRequest.setDomain(DOMAIN); // 设置域名，固定值
@@ -98,7 +99,10 @@ public class AliCloudUtils {
 
         String taskId = "";
         try {
-            CommonResponse postResponse = acsClient.getCommonResponse(postRequest);
+            if (client == null) {
+                client = getAliClient(accessKey, accessSecret);
+            }
+            CommonResponse postResponse = client.getCommonResponse(postRequest);
             if (postResponse.getHttpStatus() == 200) {
                 JSONObject result = JSONObject.parseObject(postResponse.getData());
                 String statusText = result.getString("StatusText");
@@ -119,7 +123,7 @@ public class AliCloudUtils {
     }
 
 
-    public static RecognitionResult getAsrResult(IAcsClient acsClient, String taskId) {
+    public static RecognitionResult getAsrResult(String accessKey, String accessSecret, String taskId) {
 
         RecognitionResult recognitionResult = new RecognitionResult();
 
@@ -134,7 +138,10 @@ public class AliCloudUtils {
         CommonResponse getResponse = null;
         String statusText = "";
         try {
-            getResponse = acsClient.getCommonResponse(getRequest);
+            if (client == null) {
+                client = getAliClient(accessKey, accessSecret);
+            }
+            getResponse = client.getCommonResponse(getRequest);
             if (getResponse.getHttpStatus() != 200) {
                 log.warn("{} : 识别结果查询请求失败，Http错误码： {}, {}", taskId, getResponse.getHttpStatus(), getResponse.getData());
 

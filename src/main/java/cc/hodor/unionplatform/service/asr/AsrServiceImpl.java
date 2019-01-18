@@ -1,8 +1,9 @@
 package cc.hodor.unionplatform.service.asr;
 
-import cc.hodor.unionplatform.base.constant.AsrStatusEnum;
 import cc.hodor.unionplatform.base.constant.VendorEnum;
-import cc.hodor.unionplatform.core.AliCloudUtils;
+import cc.hodor.unionplatform.core.AliCloudTask;
+import cc.hodor.unionplatform.core.BaseCloudTask;
+import cc.hodor.unionplatform.core.TaskConsumer;
 import cc.hodor.unionplatform.core.entity.OSSResult;
 import cc.hodor.unionplatform.core.entity.RecognitionResult;
 import cc.hodor.unionplatform.dao.RecognitionResultMapper;
@@ -14,8 +15,6 @@ import cc.hodor.unionplatform.service.ServiceResult;
 import cc.hodor.unionplatform.service.authentication.IAuthenticationService;
 import cc.hodor.unionplatform.util.OSSUtils;
 import cc.hodor.unionplatform.web.asr.AsrDTO;
-import com.aliyuncs.IAcsClient;
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,9 +23,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /***************************************************************************************
  *
@@ -61,9 +61,8 @@ public class AsrServiceImpl implements IAsrService {
     @NonNull
     private RecordMapper recordMapper;
 
-    private static CountDownLatch latch;
 
-    private ExecutorService executorService = Executors.newFixedThreadPool(10);
+    private ExecutorService executorService = Executors.newFixedThreadPool(64);
 
     private static final String PATTERN = "^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}&";
 
@@ -77,20 +76,26 @@ public class AsrServiceImpl implements IAsrService {
         ServiceResult authServiceRet = authenticationService.getAuthentication(asrDTO.getEngine());
         if (authServiceRet.isSuccess()) {
 
-            latch = new CountDownLatch(asrDTO.getConcurrentNumber());
+//            latch = new CountDownLatch(asrDTO.getConcurrentNumber());
 
             AuthenticationDO authenticationDO = (AuthenticationDO) authServiceRet.getData();
             String appAccessKey = authenticationDO.getAppAccessKey();
             String appAccesSecret = authenticationDO.getAppAccessSecret();
             String appId = authenticationDO.getAppId();
             if (asrDTO.getEngine() == VendorEnum.ALI) {
+
+                // 创建阻塞队列，控制长语音识别任务并发
+                // 考虑到并发限制只存在于引擎，因此队列只需要在不同引擎下新建
+                BlockingQueue<BaseCloudTask> taskQueue = new LinkedBlockingQueue<>(asrDTO.getConcurrentNumber());
+
                 String endpoint = (String) authenticationDO.getExtendInfo().get("endpoint");
                 String bucketName = (String) authenticationDO.getExtendInfo().get("bucket");
                 Date expiration = new Date(new Date().getTime() + 3600 * 1000); // 设置临时URL有效时间为1小时
                 OSSResult ossResult = OSSUtils.generatePresignedUrls(endpoint, appAccessKey, appAccesSecret,
-                        bucketName, null, asrDTO.getConcurrentNumber(), expiration);
-                IAcsClient acsClient = AliCloudUtils.getAliClient(appAccessKey, appAccesSecret);
+                        bucketName, "", asrDTO.getConcurrentNumber(), expiration);
 
+                TaskConsumer taskConsumer = new TaskConsumer(taskQueue);
+                executorService.execute(taskConsumer);
 
                 while (!StringUtils.isEmpty(ossResult.getNextMarker())) {
                     for (Map fileUrlMap : ossResult.getFileUrls()) {
@@ -98,25 +103,33 @@ public class AsrServiceImpl implements IAsrService {
 
                         String uid = fileName.substring(15, 51);
                         RecordDO recordDO = recordMapper.findByUid(uid);
+                        String fileUri = (String) fileUrlMap.get(fileName);
 
-                        String url = (String) fileUrlMap.get(fileName);
-                        String taskId = AliCloudUtils.asr(acsClient, appId, url);
-                        executorService.execute(new AsrResultTask(latch, taskId, recordDO.getId(), acsClient, this));
+                        BaseCloudTask cloudTask = new AliCloudTask(appId, appAccessKey, appAccesSecret, fileUri, recordDO.getId(), this);
+
                         try {
-                            latch.await();
+                            taskQueue.put(cloudTask);
+                            log.info("任务队列大小: {}", taskQueue.size());
                         } catch (InterruptedException e) {
-                            log.error("", e);
+                            log.error("任务无法放入队列", e);
                         }
+
                     }
                     ossResult = OSSUtils.generatePresignedUrls(endpoint, appAccessKey, appAccesSecret,
                             bucketName, ossResult.getNextMarker(), asrDTO.getConcurrentNumber(), expiration);
                 }
 
+                taskConsumer.setShutdown(true);
+
             }
+        } else {
+            log.warn("未找到引擎: {} 配置信息", asrDTO.getEngine());
         }
 
         return ret;
     }
+
+
 
     @Override
     public ServiceResult stopAsr(VendorEnum vendorEnum) {
@@ -137,6 +150,7 @@ public class AsrServiceImpl implements IAsrService {
     }
 }
 
+/*
 @Slf4j
 @AllArgsConstructor
 class AsrResultTask implements Runnable {
@@ -183,4 +197,4 @@ class AsrResultTask implements Runnable {
         }
     }
 
-}
+}*/
