@@ -2,6 +2,7 @@ package cc.hodor.unionplatform.service.asr;
 
 import cc.hodor.unionplatform.base.constant.VendorEnum;
 import cc.hodor.unionplatform.core.entity.RecognitionResult;
+import cc.hodor.unionplatform.model.RecordDO;
 import cc.hodor.unionplatform.service.ServiceResult;
 import cc.hodor.unionplatform.web.asr.AsrDTO;
 
@@ -31,4 +32,6 @@ public interface IAsrService {
     ServiceResult stopAsr(VendorEnum vendorEnum);
 
     void saveRecognitionResult(RecognitionResult recognitionResult);
+
+    RecordDO findFileId(String uid);
 }

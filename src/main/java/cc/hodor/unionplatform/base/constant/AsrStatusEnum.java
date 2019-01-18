@@ -22,6 +22,6 @@ package cc.hodor.unionplatform.base.constant;
  ****************************************************************************************/
 public enum AsrStatusEnum {
 
-    RUNNING, QUEUED, SUCCESS, FAILED;
+    RUNNING, QUEUED, SUCCESS, FAILED,QUOTA_EXCEED;
 
 }

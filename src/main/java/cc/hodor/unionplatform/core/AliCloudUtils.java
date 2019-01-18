@@ -163,6 +163,9 @@ public class AliCloudUtils {
 
                 recognitionResult.setEngine(VendorEnum.ALI);
                 recognitionResult.setSentences(sentences);
+            } else if (StringUtils.equals("USER_BIZDURATION_QUOTA_EXCEED", statusText)){
+                recognitionResult.setStatus(AsrStatusEnum.QUOTA_EXCEED);
+                log.warn("{} : 语音识别调用超限: {}", taskId, result.toJSONString());
             } else {
                 recognitionResult.setStatus(AsrStatusEnum.FAILED);
                 log.warn("{} : 获取语音识别结果失败: {}", taskId, result.toJSONString());

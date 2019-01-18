@@ -1,5 +1,6 @@
 package cc.hodor.unionplatform.core;
 
+import cc.hodor.unionplatform.base.constant.AsrStatusEnum;
 import cc.hodor.unionplatform.core.entity.RecognitionResult;
 import cc.hodor.unionplatform.service.asr.IAsrService;
 import lombok.*;
@@ -63,7 +64,7 @@ public abstract class BaseCloudTask {
     public abstract void refreshAuth();
 
 
-    public abstract void startRecognition();
+    public abstract AsrStatusEnum startRecognition();
 
 
     public abstract RecognitionResult getRecognitionResult();

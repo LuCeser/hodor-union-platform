@@ -38,7 +38,7 @@ public class AliCloudTask extends BaseCloudTask {
     }
 
     @Override
-    public void startRecognition() {
+    public AsrStatusEnum startRecognition() {
 
         long current = System.currentTimeMillis();
 
@@ -49,7 +49,10 @@ public class AliCloudTask extends BaseCloudTask {
         RecognitionResult ret = getRecognitionResult();
         long recoTimestamp = System.currentTimeMillis();
         log.info("{}: 识别总耗时 {}", taskId, recoTimestamp - current);
-        saveRecognitionResult(ret);
+        if (ret.getStatus() == AsrStatusEnum.SUCCESS) {
+            saveRecognitionResult(ret);
+        }
+        return ret.getStatus();
     }
 
     @Override
@@ -59,6 +62,7 @@ public class AliCloudTask extends BaseCloudTask {
             result = AliCloudUtils.getAsrResult(getAccessKey(), getAccessSecret(), getTaskId());
             if (result.getStatus() == AsrStatusEnum.SUCCESS) {
                 log.info("{} : 识别成功", getTaskId());
+                result.setFileId(getFileId());
                 break;
             } else if (result.getStatus() == AsrStatusEnum.FAILED) {
                 log.warn("{} : 识别失败", getTaskId());
