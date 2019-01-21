@@ -130,7 +130,7 @@ public class AsrServiceImpl implements IAsrService {
         String bucketName = (String) authenticationDO.getExtendInfo().get("bucket");
         Date expiration = new Date(new Date().getTime() + 3600 * 1000); // 设置临时URL有效时间为1小时
         OSSResult ossResult = OSSUtils.generatePresignedUrls(endpoint, appAccessKey, appAccesSecret,
-                bucketName, "", asrDTO.getConcurrentNumber(), expiration);
+                bucketName, asrDTO.getMarker(), asrDTO.getConcurrentNumber(), expiration);
 
         // 创建阻塞队列，控制长语音识别任务并发
         // 考虑到并发限制只存在于引擎，因此队列只需要在不同引擎下新建
@@ -177,6 +177,13 @@ public class AsrServiceImpl implements IAsrService {
 
     private void huaweiAsr(AsrDTO asrDTO, AuthenticationDO authenticationDO) {
 
+        String makrer = "";
+        boolean markerFlag = false;
+        if (asrDTO.getMarker() != null) {
+            makrer = asrDTO.getFileDirectory().trim() + File.separator + asrDTO.getMarker().trim();
+            markerFlag = true;
+        }
+
         String appAccessKey = authenticationDO.getAppAccessKey();
         String appAccesSecret = authenticationDO.getAppAccessSecret();
 
@@ -192,29 +199,38 @@ public class AsrServiceImpl implements IAsrService {
 
         engineTaskConsumers.put(VendorEnum.HUAWEI, consumerList);
 
+
         for (String filePath : files) {
 
-            int pos = filePath.lastIndexOf("_");
-            int end = filePath.indexOf(".");
-            String uid = filePath.substring(pos +1 , end);
 
-            RecordDO recordDO = findFileId(uid);
-            long recordId = 0;
-            if (recordDO != null) {
-                recordId = recordDO.getId();
-            }
+            if (markerFlag == false) {
+                int pos = filePath.lastIndexOf("_");
+                int end = filePath.lastIndexOf(".");
+                String uid = filePath.substring(pos + 1, end);
 
-            BaseCloudTask cloudTask = new HuaweiCloudTask(appAccessKey, appAccesSecret, filePath, recordId, this);
+                RecordDO recordDO = findFileId(uid);
+                long recordId = 0;
+                if (recordDO != null) {
+                    recordId = recordDO.getId();
+                }
 
-            try {
-                taskQueue.put(cloudTask);
-                log.info("任务队列大小: {}", taskQueue.size());
-            } catch (InterruptedException e) {
-                log.error("任务无法放入队列", e);
+                BaseCloudTask cloudTask = new HuaweiCloudTask(appAccessKey, appAccesSecret, filePath, recordId, this);
+
+                try {
+                    taskQueue.put(cloudTask);
+                    log.info("任务队列大小: {}", taskQueue.size());
+                } catch (InterruptedException e) {
+                    log.error("任务无法放入队列", e);
+                }
+
+            } else {
+                if (StringUtils.equals(filePath, makrer)) {
+                    log.info("find marker {}", makrer);
+                    markerFlag = false;
+                }
             }
 
         }
-
 
     }
 
@@ -225,6 +241,8 @@ public class AsrServiceImpl implements IAsrService {
         recognitionResultDO.setFileId(recognitionResult.getFileId());
         recognitionResultDO.setResult(recognitionResult.getSentences());
         recognitionResultDO.setEngine(recognitionResult.getEngine());
+        recognitionResultDO.setRecognitionDuration(recognitionResult.getRecognitionDuration());
+        recognitionResultDO.setCreateTime(new Date());
 
         log.info("识别结果插入数据库");
 
