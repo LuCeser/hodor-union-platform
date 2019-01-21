@@ -9,6 +9,8 @@
         <result column="engine" property="engine"/>
         <result column="duration" property="duration"/>
         <result column="result" property="result" typeHandler="cc.hodor.unionplatform.config.mybatis.typehandler.SentenceTypeHandler"/>
+        <result column="create_time" property="createTime"/>
+        <result column="recognition_duration" property="recognitionDuration" />
     </resultMap>
 
 
@@ -18,14 +20,18 @@
         `file_id`,
         `engine`,
         `duration`,
-        `result`
+        `result`,
+        `create_time`,
+        `recognition_duration`
         ) VALUES
         (
         #{id},
         #{fileId},
         #{engine, typeHandler=cc.hodor.unionplatform.config.mybatis.typehandler.EnumCodeTypeHandler},
         #{duration},
-        #{result, typeHandler=cc.hodor.unionplatform.config.mybatis.typehandler.SentenceTypeHandler}
+        #{result, typeHandler=cc.hodor.unionplatform.config.mybatis.typehandler.SentenceTypeHandler},
+        #{createTime},
+        #{recognitionDuration}
         )
     </insert>
 

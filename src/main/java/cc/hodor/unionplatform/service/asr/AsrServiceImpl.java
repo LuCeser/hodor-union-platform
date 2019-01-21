@@ -130,7 +130,7 @@ public class AsrServiceImpl implements IAsrService {
         String bucketName = (String) authenticationDO.getExtendInfo().get("bucket");
         Date expiration = new Date(new Date().getTime() + 3600 * 1000); // 设置临时URL有效时间为1小时
         OSSResult ossResult = OSSUtils.generatePresignedUrls(endpoint, appAccessKey, appAccesSecret,
-                bucketName, "", asrDTO.getConcurrentNumber(), expiration);
+                bucketName, asrDTO.getMarker(), asrDTO.getConcurrentNumber(), expiration);
 
         // 创建阻塞队列，控制长语音识别任务并发
         // 考虑到并发限制只存在于引擎，因此队列只需要在不同引擎下新建
@@ -241,6 +241,8 @@ public class AsrServiceImpl implements IAsrService {
         recognitionResultDO.setFileId(recognitionResult.getFileId());
         recognitionResultDO.setResult(recognitionResult.getSentences());
         recognitionResultDO.setEngine(recognitionResult.getEngine());
+        recognitionResultDO.setRecognitionDuration(recognitionResult.getRecognitionDuration());
+        recognitionResultDO.setCreateTime(new Date());
 
         log.info("识别结果插入数据库");
 

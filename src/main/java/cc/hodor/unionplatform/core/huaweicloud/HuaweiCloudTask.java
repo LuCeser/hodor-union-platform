@@ -50,10 +50,11 @@ public class HuaweiCloudTask extends BaseCloudTask {
         log.info("提交华为云识别请求成功, taskId: {}", taskId);
         setTaskId(taskId);
         RecognitionResult ret = getRecognitionResult();
-        long recoTimestamp = System.currentTimeMillis();
-        log.info("{}: 识别总耗时 {}", taskId, recoTimestamp - current);
+        long elapse = (System.currentTimeMillis() - current) / 1000;
+        log.info("{}: 识别总耗时 {}s", taskId, elapse);
         if (ret.getStatus() == AsrStatusEnum.SUCCESS) {
             ret.setEngine(VendorEnum.HUAWEI);
+            ret.setRecognitionDuration(elapse);
             saveRecognitionResult(ret);
         }
         return ret.getStatus();
@@ -66,14 +67,14 @@ public class HuaweiCloudTask extends BaseCloudTask {
         while (true) {
             result = HuaweiCloudUtils.getAsrResult(getAccessKey(), getAccessSecret(), getTaskId());
             if (result.getStatus() == AsrStatusEnum.SUCCESS) {
-                log.info("{} : 识别成功", getTaskId());
+//                log.info("{} : 识别成功", getTaskId());
                 result.setFileId(getFileId());
                 break;
             } else if (result.getStatus() == AsrStatusEnum.FAILED) {
-                log.warn("{} : 识别失败", getTaskId());
+//                log.warn("{} : 识别失败", getTaskId());
                 break;
             } else {
-                log.info("{} : 识别中", getTaskId());
+//                log.info("{} : 识别中", getTaskId());
                 try {
                     Thread.sleep(5 * 1000);
                 } catch (InterruptedException e) {

@@ -41,4 +41,6 @@ public class RecognitionResult {
 
     private List<Sentence> sentences;
 
+    private long recognitionDuration;
+
 }

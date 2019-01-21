@@ -83,7 +83,7 @@ public class OSSUtils {
             Set<Map> fileUrls = new HashSet<>(maxFiles);
 
             ObjectListing objectListing = ossClient.listObjects(
-                    new ListObjectsRequest(bucketName).withMaxKeys(maxFiles).withMarker(marker));
+                    new ListObjectsRequest(bucketName).withMaxKeys(maxFiles).withMarker(marker != null?marker:""));
             String currentMarker = objectListing.getMarker();
             String nextMarker = objectListing.getNextMarker();
             boolean isTruncated = objectListing.isTruncated();

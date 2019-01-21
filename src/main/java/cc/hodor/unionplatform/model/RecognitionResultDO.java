@@ -8,6 +8,7 @@ import tk.mybatis.mapper.annotation.KeySql;
 
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Date;
 import java.util.List;
 
 /***************************************************************************************
@@ -46,5 +47,9 @@ public class RecognitionResultDO {
     private long duration;
 
     private List<Sentence> result;
+
+    private Date createTime;
+
+    private long recognitionDuration;
 
 }
