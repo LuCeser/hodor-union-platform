@@ -192,6 +192,10 @@ public class HuaweiCloudUtils {
 
         } catch (IOException e) {
             log.error("", e);
+            client = getAccessService(accessKey, accessSecret);
+        } catch (NullPointerException e) {
+            log.error("", e);
+            client = getAccessService(accessKey, accessSecret);
         }
 
         return recognitionResult;

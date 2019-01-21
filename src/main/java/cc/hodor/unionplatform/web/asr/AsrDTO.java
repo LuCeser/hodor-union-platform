@@ -52,6 +52,14 @@ public class AsrDTO {
      */
     private boolean freeAccount;
 
+    /**
+     * file directory, if use local directory
+     */
     private String fileDirectory;
+
+    /**
+     * use file from marker
+     */
+    private String marker;
 
 }
