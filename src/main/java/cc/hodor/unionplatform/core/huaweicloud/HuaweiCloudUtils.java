@@ -96,6 +96,8 @@ public class HuaweiCloudUtils {
                     return jobId;
                 } catch (IOException e) {
                     log.error("", e);
+                } catch (NullPointerException e) {
+                    log.error("", e);
                 }
             }
         } catch (IOException e) {
