@@ -31,7 +31,7 @@ public interface IAsrService {
 
     ServiceResult stopAsr(VendorEnum vendorEnum);
 
-    void saveRecognitionResult(RecognitionResult recognitionResult);
+    boolean saveRecognitionResult(RecognitionResult recognitionResult);
 
     void longSentenceRecognition(AsrDTO asrDTO);
 
