@@ -86,7 +86,7 @@ public abstract class BaseCloudTask {
                 if (result.getStatus() == AsrStatusEnum.SUCCESS) {
                     long elapse = (System.currentTimeMillis() - current) / 1000;
                     result.setFileId(getFileId());
-                    result.setDuration(elapse);
+                    result.setRecognitionDuration(elapse);
                     log.info("{}: 识别总耗时 {}s", taskId, elapse);
                     boolean saveResult = saveRecognitionResult(result);
 
