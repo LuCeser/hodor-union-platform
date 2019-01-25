@@ -150,6 +150,10 @@ public class AsrServiceImpl implements IAsrService {
 
                 String uid = fileName.substring(15, 51);
                 RecordDO recordDO = findFileId(uid);
+                if (recordDO == null) {
+                    log.warn("cannot find file record");
+                    continue;
+                }
                 String fileUri = (String) fileUrlMap.get(fileName);
 
                 BaseCloudTask cloudTask = new AliCloudTask(appId, appAccessKey, appAccesSecret, fileUri, recordDO.getId(), this);
@@ -234,7 +238,7 @@ public class AsrServiceImpl implements IAsrService {
 
     }
 
-    public void saveRecognitionResult(RecognitionResult recognitionResult) {
+    public boolean saveRecognitionResult(RecognitionResult recognitionResult) {
 
         RecognitionResultDO recognitionResultDO = new RecognitionResultDO();
         recognitionResultDO.setDuration(recognitionResult.getDuration());
@@ -247,6 +251,11 @@ public class AsrServiceImpl implements IAsrService {
         log.info("识别结果插入数据库");
 
         int updates = recognitionResultMapper.insertResult(recognitionResultDO);
+        if (updates > 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override

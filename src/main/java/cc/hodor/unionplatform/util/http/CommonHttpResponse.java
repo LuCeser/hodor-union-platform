@@ -23,14 +23,14 @@ import java.util.TreeMap;
  *   zhanglu               2019/1/16-14:51
  *
  ****************************************************************************************/
-public class AisHttpResponse {
+public class CommonHttpResponse {
 
     private Map<String, String> header;
     private byte[] body;
     private String charset;
     private int status;
 
-    public AisHttpResponse() {
+    public CommonHttpResponse() {
         status = 0;
         charset = "UTF-8";
         header = new TreeMap<>();

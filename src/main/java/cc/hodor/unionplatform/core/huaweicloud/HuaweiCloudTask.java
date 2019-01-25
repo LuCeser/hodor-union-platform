@@ -46,6 +46,7 @@ public class HuaweiCloudTask extends BaseCloudTask {
         long current = System.currentTimeMillis();
 
         log.info("提交华为云识别请求");
+
         String taskId = HuaweiCloudUtils.asr(getAccessKey(), getAccessSecret(), getFileUri());
         log.info("提交华为云识别请求成功, taskId: {}", taskId);
         setTaskId(taskId);

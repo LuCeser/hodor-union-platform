@@ -4,6 +4,7 @@ import cc.hodor.unionplatform.base.constant.AsrStatusEnum;
 import cc.hodor.unionplatform.core.entity.RecognitionResult;
 import cc.hodor.unionplatform.service.asr.IAsrService;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 
 /***************************************************************************************
  *
@@ -25,6 +26,7 @@ import lombok.*;
  *   zhanglu               2019/1/17-15:48
  *
  ****************************************************************************************/
+@Slf4j
 @RequiredArgsConstructor
 @NoArgsConstructor
 @AllArgsConstructor
@@ -47,6 +49,12 @@ public abstract class BaseCloudTask {
     @NonNull
     private Long fileId;
 
+    /**
+     * expire time
+     */
+    @Setter
+    private Long expireAt;
+
     @NonNull
     private IAsrService asrService;
 
@@ -59,13 +67,51 @@ public abstract class BaseCloudTask {
         this.fileUri = fileUri;
         this.fileId = fileId;
         this.asrService = asrService;
+        this.expireAt = 0L;
+    }
+
+    public boolean startTask() {
+
+        AsrStatusEnum taskStatus = startRecognition();
+        if (taskStatus == AsrStatusEnum.FAILED || taskStatus == AsrStatusEnum.QUOTA_EXCEED) {
+            log.warn("task failure, status: {}", taskStatus);
+            return false;
+        } else {
+            long current = System.currentTimeMillis();
+            log.info("task status: {}", taskStatus);
+            RecognitionResult result;
+
+            while (true) {
+                result = getRecognitionResult();
+                if (result.getStatus() == AsrStatusEnum.SUCCESS) {
+                    long elapse = (System.currentTimeMillis() - current) / 1000;
+                    result.setFileId(getFileId());
+                    result.setDuration(elapse);
+                    log.info("{}: 识别总耗时 {}s", taskId, elapse);
+                    boolean saveResult = saveRecognitionResult(result);
+
+                    break;
+                } else if (result.getStatus() == AsrStatusEnum.RUNNING) {
+                    try {
+                        Thread.sleep(5 * 1000);
+                    } catch (InterruptedException e) {
+                        log.error("", e);
+                    }
+                } else {
+                    log.warn("failure");
+                    break;
+                }
+
+            }
+
+            log.info("{} task end", taskId);
+            return true;
+        }
     }
 
     public abstract void refreshAuth();
 
-
     public abstract AsrStatusEnum startRecognition();
-
 
     public abstract RecognitionResult getRecognitionResult();
 
@@ -77,10 +123,7 @@ public abstract class BaseCloudTask {
      * @return
      */
     public boolean saveRecognitionResult(RecognitionResult recognitionResult) {
-
-        asrService.saveRecognitionResult(recognitionResult);
-
-        return false;
+        return asrService.saveRecognitionResult(recognitionResult);
     }
 
 }
