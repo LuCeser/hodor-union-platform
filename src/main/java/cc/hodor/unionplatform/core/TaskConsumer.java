@@ -1,6 +1,5 @@
 package cc.hodor.unionplatform.core;
 
-import cc.hodor.unionplatform.base.constant.AsrStatusEnum;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -44,8 +43,8 @@ public class TaskConsumer implements Runnable {
             try {
                 BaseCloudTask cloudTask = taskQueue.take();
                 log.info("从长语音识别队列中获取任务", cloudTask);
-                AsrStatusEnum ret = cloudTask.startRecognition();
-                if (ret == AsrStatusEnum.QUOTA_EXCEED) {
+                boolean status = cloudTask.startTask();
+                if (!status) {
                     shutdown = true;
                 }
 

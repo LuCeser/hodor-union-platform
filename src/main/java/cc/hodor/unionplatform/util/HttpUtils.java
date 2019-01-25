@@ -1,9 +1,8 @@
 package cc.hodor.unionplatform.util;
 
-import cc.hodor.unionplatform.util.http.AisHttpRequest;
-import cc.hodor.unionplatform.util.http.AisHttpResponse;
+import cc.hodor.unionplatform.util.http.CommonHttpRequest;
+import cc.hodor.unionplatform.util.http.CommonHttpResponse;
 import com.alibaba.fastjson.JSON;
-import com.aliyun.oss.common.utils.HttpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
@@ -395,14 +394,14 @@ public class HttpUtils {
         return result;
     }
 
-    public static AisHttpResponse doPost(AisHttpRequest request) {
+    public static CommonHttpResponse doPost(CommonHttpRequest request) {
 
         String url;
         String charset = request.getContentEncoding();
         String content = request.getBodyStr();
         HashMap<String, String> header = request.getHeaders();
 
-        AisHttpResponse response = new AisHttpResponse();
+        CommonHttpResponse response = new CommonHttpResponse();
         CloseableHttpResponse httpResponse = null;
         CloseableHttpClient client = null;
 

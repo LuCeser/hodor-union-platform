@@ -3,6 +3,9 @@ package cc.hodor.unionplatform.util.http;
 import cc.hodor.unionplatform.util.SignUtil;
 import com.alibaba.fastjson.JSONObject;
 import io.undertow.util.Headers;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,21 +33,22 @@ import java.util.Map;
  *   zhanglu               2019/1/16-14:51
  *
  ****************************************************************************************/
-public class AisHttpRequest {
+@Slf4j
+@Setter
+@Getter
+public class CommonHttpRequest {
 
     private HashMap<String, String> headers;
     private HashMap<String, String> params;
     private HashMap<String, Object> body;
     private URI uri;
-    private HttpMethodNameENUM httpMethod;
     private EBodyFormatENUM bodyFormat;
     private String contentEncoding;
 
-    public AisHttpRequest() {
+    public CommonHttpRequest() {
         headers = new HashMap<>();
         params = new HashMap<>();
         body = new HashMap<>();
-        httpMethod = HttpMethodNameENUM.POST;
         bodyFormat = EBodyFormatENUM.FORM_KV;
         contentEncoding = HttpCharacterEncoding.DEFAULT_ENCODING;
     }
@@ -102,7 +106,7 @@ public class AisHttpRequest {
         try {
             this.uri = new URI(url);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.error("", e);
         }
     }
 
@@ -117,60 +121,4 @@ public class AisHttpRequest {
         return buffer.toString();
     }
 
-
-    public HashMap<String, String> getHeaders() {
-        return headers;
-    }
-
-    public void setHeaders(HashMap<String, String> headers) {
-        this.headers = headers;
-    }
-
-    public HashMap<String, String> getParams() {
-        return params;
-    }
-
-    public void setParams(HashMap<String, String> params) {
-        this.params = params;
-    }
-
-    public HashMap<String, Object> getBody() {
-        return body;
-    }
-
-    public void setBody(HashMap<String, Object> body) {
-        this.body = body;
-    }
-
-    public URI getUri() {
-        return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
-
-    public HttpMethodNameENUM getHttpMethod() {
-        return httpMethod;
-    }
-
-    public void setHttpMethod(HttpMethodNameENUM httpMethod) {
-        this.httpMethod = httpMethod;
-    }
-
-    public EBodyFormatENUM getBodyFormat() {
-        return bodyFormat;
-    }
-
-    public void setBodyFormat(EBodyFormatENUM bodyFormat) {
-        this.bodyFormat = bodyFormat;
-    }
-
-    public String getContentEncoding() {
-        return contentEncoding;
-    }
-
-    public void setContentEncoding(String contentEncoding) {
-        this.contentEncoding = contentEncoding;
-    }
 }
