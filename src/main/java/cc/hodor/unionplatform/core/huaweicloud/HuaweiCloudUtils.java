@@ -88,20 +88,15 @@ public class HuaweiCloudUtils {
                 log.warn("调用语音识别服务失败");
             }
 
-            if (response.getEntity().getContentLength() > 0 || response.getEntity().isChunked()) {
-                try {
-                    String responseEntity = EntityUtils.toString(response.getEntity(), Charset.forName("UTF-8"));
-                    JSONObject resultObject = JSON.parseObject(responseEntity);
-                    String jobId = resultObject.getJSONObject("result").getString("job_id");
-                    return jobId;
-                } catch (IOException e) {
-                    log.error("", e);
-                } catch (NullPointerException e) {
-                    log.error("", e);
-                }
-            }
+            String responseEntity = EntityUtils.toString(response.getEntity(), Charset.forName("UTF-8"));
+            JSONObject resultObject = JSON.parseObject(responseEntity);
+            String jobId = resultObject.getJSONObject("result").getString("job_id");
+            return jobId;
+
         } catch (IOException e) {
-            log.error("", e);
+            log.error("调用服务失败", e);
+        } catch (NullPointerException e) {
+            log.error("未获取正常结果", e);
         }
 
         return null;
@@ -193,10 +188,10 @@ public class HuaweiCloudUtils {
 
 
         } catch (IOException e) {
-            log.error("", e);
+            log.error("调用华为云接口失败", e);
             client = getAccessService(accessKey, accessSecret);
         } catch (NullPointerException e) {
-            log.error("", e);
+            log.error("未找到正确的返回结果", e);
             client = getAccessService(accessKey, accessSecret);
         }
 
