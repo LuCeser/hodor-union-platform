@@ -85,7 +85,12 @@ public class HuaweiCloudUtils {
 
             HttpResponse response = client.post(uri, json.toJSONString());
             if (response.getStatusLine().getStatusCode() != 200) {
-                log.warn("调用语音识别服务失败");
+                String body = "";
+                if (response.getEntity() != null) {
+                    body = EntityUtils.toString(response.getEntity());
+                }
+                log.warn("调用语音识别服务失败, {}", body);
+                return null;
             }
 
             String responseEntity = EntityUtils.toString(response.getEntity(), Charset.forName("UTF-8"));

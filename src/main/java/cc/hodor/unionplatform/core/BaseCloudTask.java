@@ -73,11 +73,11 @@ public abstract class BaseCloudTask {
     public boolean startTask() {
 
         AsrStatusEnum taskStatus = startRecognition();
+        long current = System.currentTimeMillis();
         if (taskStatus == AsrStatusEnum.FAILED || taskStatus == AsrStatusEnum.QUOTA_EXCEED) {
             log.warn("task failure, status: {}", taskStatus);
             return false;
         } else {
-            long current = System.currentTimeMillis();
             log.info("task status: {}", taskStatus);
             RecognitionResult result;
 

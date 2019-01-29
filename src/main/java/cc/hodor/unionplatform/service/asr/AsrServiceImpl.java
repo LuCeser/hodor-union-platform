@@ -203,10 +203,7 @@ public class AsrServiceImpl implements IAsrService {
 
         engineTaskConsumers.put(VendorEnum.HUAWEI, consumerList);
 
-
         for (String filePath : files) {
-
-
             if (markerFlag == false) {
                 int pos = filePath.lastIndexOf("_");
                 int end = filePath.lastIndexOf(".");
