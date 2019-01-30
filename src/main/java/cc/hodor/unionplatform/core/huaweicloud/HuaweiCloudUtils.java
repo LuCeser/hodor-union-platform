@@ -144,9 +144,9 @@ public class HuaweiCloudUtils {
 
             resp = JSON.parseObject(result);
             jsonObject = (JSONObject) resp.get("result");
-            status = (int) jsonObject.get("status_code");
+            status = jsonObject.get("status_code") != null ? (int) jsonObject.get("status_code") : -1;
             if (status == -1) {
-                log.warn("{}: 任务识别失败", jobId);
+                log.warn("{}: 任务识别失败, {}", jobId, result);
                 recognitionResult.setStatus(AsrStatusEnum.FAILED);
             } else if (status == 2) {
                 // 7. 处理服务返回的字符流，输出识别结果。
